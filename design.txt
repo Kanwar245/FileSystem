@@ -1,0 +1,56 @@
+================================================================ CSCC69 A3 Design Document ============================================================================
+======================================================================== Group 1 ======================================================================================
+
+1. File Table Design
+The struct filetable is a per-process struct that contains an array with fixed length __OPEN_MAX. The array contains struct openfile pointers. 
+Hence a process can have at most __OPEN_MAX number of open files at the same time.
+Struct openfile contains the following fields:
+-	struct vnode, which is the global representation of a file.
+-	off_t of_offset, the current position of the file, which will be useful for the implementation of sys_read() and sys_write()
+-	int of_refcount is used to keep track of all the total number of processes that are accessing the file, which is different than the vnode opencount 
+	that should not be changed outside vfs layer. When sys_close() calls file_close() to close a file, the program needs to decide whether it should call vfs_close() 
+	or not based on this field.
+-	struct lock *of_lock is the lock dedicated to struct openfile. This lock will be acquired every time there is a changed on the value of of_offset or of_opencount, 
+	and released when change is done.
+-	int of_flags is used to indicate the access mode of a file.
+
+This design supports fork semantics because after a fork, the child process will have a copy of the same file table as its parent. Therefore we need to be careful 
+when reading and writing to files by setting the open file lock before beginning the operation and releasing it when we're done.
+
+This also means that we need to increment the reference count when we fork so we know how many processes are aware of the file. This prevents any of the processes from 
+closing the file and removing it from the table while other processes are still accesssing it.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. Implementation of sfs_getdirentry()
+Parameters:
+	pointer of struct vnode, from which we can obtain the sfs_vnode
+	pointer of struct uio, from which we can obtain the offset of the directory
+	
+The purpose of this function is to get the first non-empty directory entry at the offset of the directory in the given vnode.
+First of all, we need to make sure the type of sfs_vnode is a directory but not a regular file. If this condition check failed, function will return with ENOTDIR error.
+
+If condition is satisfied, function will go into a while loop which is the body of this function.
+
+Inside the loop, we firstly make sure the slot we obtained is smaller than the total number of entries. If not, function will return with return value 0.
+If the slot number is within range, we call sfs_readdir() to obtain the struct sfs_dir sfd. If the read failed, function will return with the value we obtained from 
+sfs_readdir().
+If read succeeded, we need to make sure we did not read an empty slot by checking the mode number of the struct sfs_dir. If mode numebr equals to SFS_NOINO, it means 
+the entry obtained is empty. In this case, the program will go to the next slot and repeat the above steps again.
+
+If the entry we obtained is not empty, the program will call uiomove() to copy the name of the directory entry into a struct uio. If uiomove() failed, function will 
+return its return value. If not, then function will update the offset by adding 1 to it and return 0.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3. Changes made to use wasted inode space to store file data
+Please refer to the a3/sfs.patch and a3/sfs_vnode.patch files for the changes we made for using wasted inode space. The major change will be the offset.
+We changed the physical offset from uio->uio_offset to uio->uio_offset - SFS_INLINED_BYTES. This change is NOT added to the actual code due to the error we got as  
+mentioned in the "Challenges" section.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4. Challenges
+- testbin/badcall for lseek was not working properly (it crashes the kernel due to TLB miss on load). It passes the first 6 tests.
+- We got the following error in the implementation of using wasted inode space:
+"panic: sfs: d_io returned EINVAL"

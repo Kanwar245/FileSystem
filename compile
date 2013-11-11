@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# give execute to everything before compiling
+echo "Is this the first time you're running this script? [y/n]. Press enter"
+read ans
+if [ $ans == "yes" ]; then
+	chmod +x -R *
+fi
+
+current=`pwd`
+
+MAKEPRG=bmake
+MAKEFLAGS="-j4"
+
+if [ $# -ne 1 ]; then
+	echo "Usage: ./compile dirname, where dirname is the directory starting from $HOME that contains root directory"
+	exit
+fi
+
+# A Simple bash script to configure and compile os/161
+echo "Configuring your tree for the machine on which you are working"
+cd ./src
+./configure --ostree=~/$1/root
+
+echo
+echo "Configuring kernel named ASST3"
+cd kern/conf
+./config ASST3 || exit
+
+echo
+echo "Building the ASST3 kernel"
+cd ../compile/ASST3
+${MAKEPRG} ${MAKEFLAGS} depend || exit
+${MAKEPRG} ${MAKEFLAGS} || exit 
+
+echo
+echo "Installing ASST3 kernel"
+${MAKEPRG} ${MAKEFLAGS} install || exit
+
+echo
+echo "Building user-level utilities"
+cd ../../..
+bmake clean
+${MAKEPRG} ${MAKEFLAGS} || exit
+${MAKEPRG} ${MAKEFLAGS} install ||exit
+ctags -R .
+
+cp $current/src/sys161.conf ~/$1/root
+
+echo
+echo "Did you unmount the FS first? y or n"
+read user
+
+if [ $user == "y" ]; then
+	echo
+	echo "Setting up SFS on DISK1.img using VOLNAME=FS"
+	cd ~/$1/root
+	./hostbin/host-mksfs DISK1.img FS
+	echo "You're now ready to mount FS using the command \"mount sfs lhdo\" on the kernel"
+	echo "After mounting, run fs1 test by typing \"fs1 FS\" on the kernel"
+fi

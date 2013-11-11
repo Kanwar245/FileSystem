@@ -1,0 +1,86 @@
+10
+
+dir
+23
+https://mathlab.utsc.utoronto.ca/svn/cscc69s13/Group1/a3/src/man
+https://mathlab.utsc.utoronto.ca/svn/cscc69s13/Group1/a3
+
+
+
+2013-07-15T15:35:13.150457Z
+1
+root
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+abff24b7-2808-461a-8786-3b160e578c44
+
+bin
+dir
+
+testbin
+dir
+
+libc
+dir
+
+syscall
+dir
+
+toplevel
+dir
+
+misc
+dir
+
+sbin
+dir
+
+Makefile
+file
+
+
+
+
+2013-07-16T13:11:11.000437Z
+8a20b01ed1e634437efc912d2534e1c2
+2013-07-15T15:35:13.150457Z
+1
+root
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+183
+
+dev
+dir
+

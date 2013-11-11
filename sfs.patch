@@ -1,0 +1,12 @@
+--- sfs.h	2013-08-02 14:30:46.000000000 -0400
++++ sfs_new.h	2013-08-02 20:20:03.000000000 -0400
+@@ -92,7 +92,8 @@
+ 	uint16_t sfi_linkcount;			/* # hard links to this file */
+ 	uint32_t sfi_direct[SFS_NDIRECT];	/* Direct blocks */
+ 	uint32_t sfi_indirect;			/* Indirect block */
+-	uint32_t sfi_waste[128-3-SFS_NDIRECT];	/* unused space, set to 0 */
++	uint32_t sfi_waste;			/* unused space, set to 0 */
++	char sfi_inlinedata[SFS_INLINED_BYTES];
+ };
+ 
+ /*
