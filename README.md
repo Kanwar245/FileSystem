@@ -118,7 +118,7 @@ entries.  You will also make SFS use disk space more efficiently.
       OS/161 man page for fork().
       </li>
       <li><b>System Calls</b> (30 pts): Implement 10 new system calls,
-      detailed in the <a href="c69_p3.shtml#syscalls">System Calls
+      detailed in the System Calls
       section</a>.  It's not as bad as it sounds -- many of the system
       calls are paired.  <tt>open</tt> and <tt>close</tt>, for
       example.
