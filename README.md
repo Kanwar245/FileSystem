@@ -1,9 +1,5 @@
-c69_project_3
-=============
-
-CSCC69
-
-
+# CSCC69 Project 3
+Summer 2013
 
 <h2>Outline</h2>
 
